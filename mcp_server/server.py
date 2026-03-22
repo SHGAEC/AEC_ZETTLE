@@ -19,6 +19,32 @@ mcp = FastMCP("zettelkasten", host="0.0.0.0", port=port)
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
+def draft_zettel(
+    title: str,
+    body: str,
+    type: str = "note",
+    tags: list[str] = [],
+    metadata: dict = {},
+) -> dict:
+    """
+    Structure a zettel entry and return it for user review WITHOUT saving to the database.
+
+    Always call this tool first before commit_zettel. Present the returned draft
+    clearly to the user and ask them to confirm or request changes before committing.
+
+    Types: note | idea | contact | organization | reference
+    """
+    return {
+        "status": "draft — not yet saved",
+        "title": title,
+        "body": body,
+        "type": type,
+        "tags": tags,
+        "metadata": metadata,
+    }
+
+
+@mcp.tool()
 def commit_zettel(
     title: str,
     body: str,
@@ -27,7 +53,10 @@ def commit_zettel(
     metadata: dict = {},
 ) -> dict:
     """
-    Save a new zettel entry to the database.
+    Save a zettel entry to the database.
+
+    IMPORTANT: Always call draft_zettel first and get explicit user approval
+    before calling this tool. Never commit without the user confirming the draft.
 
     Types: note | idea | contact | organization | reference
 
