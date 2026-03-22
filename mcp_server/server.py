@@ -57,7 +57,12 @@ def draft_zettel(
     - Prefer existing tags over creating new ones where the meaning is the same
     - Max ~5 tags per entry
 
-    Types: note | idea | contact | organization | reference
+    Types: note | idea | contact | organization | reference | todo
+
+    For todo entries, use metadata to store:
+      - status: "pending" | "in-progress" | "done"
+      - priority: "high" | "medium" | "low"
+      - due: "YYYY-MM-DD" (optional)
     """
     return {
         "status": "draft — not yet saved",
@@ -83,10 +88,11 @@ def commit_zettel(
     IMPORTANT: Always call draft_zettel first and get explicit user approval
     before calling this tool. Never commit without the user confirming the draft.
 
-    Types: note | idea | contact | organization | reference
+    Types: note | idea | contact | organization | reference | todo
 
     metadata is a free-form JSON object — use it for anything that doesn't fit
     the core fields (e.g. email, url, org_name, related_person).
+    For todos: {"status": "pending|in-progress|done", "priority": "high|medium|low", "due": "YYYY-MM-DD"}
     """
     result = (
         supabase.table("zettels")
@@ -198,6 +204,32 @@ def list_recent(limit: int = 10) -> list:
         .execute()
     )
     return result.data
+
+
+@mcp.tool()
+def list_todos(status: str | None = None) -> list:
+    """
+    Return todo entries, optionally filtered by status.
+    status: "pending" | "in-progress" | "done" | None (returns all)
+    Results are ordered by priority (high → medium → low) then created_at.
+    """
+    result = (
+        supabase.table("zettels")
+        .select("id, title, tags, metadata, created_at")
+        .eq("type", "todo")
+        .execute()
+    )
+    todos = result.data or []
+
+    if status:
+        todos = [t for t in todos if t.get("metadata", {}).get("status") == status]
+
+    priority_order = {"high": 0, "medium": 1, "low": 2}
+    todos.sort(key=lambda t: (
+        priority_order.get(t.get("metadata", {}).get("priority", "low"), 2),
+        t["created_at"]
+    ))
+    return todos
 
 
 @mcp.tool()
