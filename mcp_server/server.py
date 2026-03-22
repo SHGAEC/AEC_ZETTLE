@@ -19,6 +19,17 @@ mcp = FastMCP("zettelkasten", host="0.0.0.0", port=port)
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
+def get_tags() -> list[str]:
+    """
+    Return all tags currently in use across the zettelkasten, sorted alphabetically.
+    Call this before drafting a zettel to check existing tags and reuse them where
+    appropriate rather than creating near-duplicates.
+    """
+    result = supabase.rpc("get_all_tags").execute()
+    return result.data or []
+
+
+@mcp.tool()
 def draft_zettel(
     title: str,
     body: str,
@@ -32,8 +43,18 @@ def draft_zettel(
     Trigger: when the user says "ST" or "ST <context>", treat it as an instruction
     to save the most recent idea, concept, or content from the conversation to the zettelkasten.
 
-    Always call this tool first before commit_zettel. Present the returned draft
-    clearly to the user and ask them to confirm or request changes before committing.
+    Workflow:
+    1. Call get_tags() first to see existing tags.
+    2. Call this tool to produce the draft.
+    3. Present the draft clearly to the user and invite edits.
+    4. If the user requests changes, call draft_zettel again with the updated values.
+    5. Only call commit_zettel once the user explicitly approves.
+
+    Tag rules — enforce strictly:
+    - Always lowercase
+    - Hyphens instead of spaces (e.g. "machine-learning" not "machine learning")
+    - Prefer existing tags over creating new ones where the meaning is the same
+    - Max ~5 tags per entry
 
     Types: note | idea | contact | organization | reference
     """

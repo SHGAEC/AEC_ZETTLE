@@ -11,7 +11,15 @@
       "Bash(git remote:*)",
       "Bash(git branch:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(railway init:*)",
+      "Bash(railway variables:*)",
+      "Bash(railway service:*)",
+      "Bash(curl -si --max-time 10 https://zettelkasten-production-b528.up.railway.app/sse)",
+      "Bash(curl:*)",
+      "Bash(railway logs:*)",
+      "Bash(railway up:*)"
     ]
   }
 }
