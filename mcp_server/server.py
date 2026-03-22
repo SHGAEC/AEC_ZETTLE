@@ -29,6 +29,9 @@ def draft_zettel(
     """
     Structure a zettel entry and return it for user review WITHOUT saving to the database.
 
+    Trigger: when the user says "ST" or "ST <context>", treat it as an instruction
+    to save the most recent idea, concept, or content from the conversation to the zettelkasten.
+
     Always call this tool first before commit_zettel. Present the returned draft
     clearly to the user and ask them to confirm or request changes before committing.
 
