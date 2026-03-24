@@ -12,7 +12,6 @@ supabase: Client = create_client(
 )
 
 port = int(os.environ.get("PORT", 8000))
-author = os.environ.get("AUTHOR_NAME", "unknown")
 mcp = FastMCP("zettelkasten", host="0.0.0.0", port=port)
 
 
@@ -35,6 +34,7 @@ def get_tags() -> list[str]:
 def draft_zettel(
     title: str,
     body: str,
+    author: str = "unknown",
     type: str = "note",
     tags: list[str] = [],
     metadata: dict = {},
@@ -46,11 +46,12 @@ def draft_zettel(
     to save the most recent idea, concept, or content from the conversation to the zettelkasten.
 
     Workflow:
-    1. Call get_tags() first to see existing tags.
-    2. Call this tool to produce the draft.
-    3. Present the draft clearly to the user and invite edits.
-    4. If the user requests changes, call draft_zettel again with the updated values.
-    5. Only call commit_zettel once the user explicitly approves.
+    1. Ask the user for their name if not already known, to populate the author field.
+    2. Call get_tags() first to see existing tags.
+    3. Call this tool to produce the draft.
+    4. Present the draft clearly to the user and invite edits.
+    5. If the user requests changes, call draft_zettel again with the updated values.
+    6. Only call commit_zettel once the user explicitly approves.
 
     Tag rules — enforce strictly:
     - Always lowercase
@@ -80,6 +81,7 @@ def draft_zettel(
 def commit_zettel(
     title: str,
     body: str,
+    author: str = "unknown",
     type: str = "note",
     tags: list[str] = [],
     metadata: dict = {},
@@ -232,7 +234,7 @@ def batch_commit(entries: list[dict]) -> dict:
             "type": e.get("type", "note"),
             "tags": e.get("tags", []),
             "metadata": e.get("metadata", {}),
-            "author": author,
+            "author": e.get("author", "unknown"),
         }
         for e in entries
     ]
