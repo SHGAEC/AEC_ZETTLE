@@ -289,5 +289,5 @@ def link_zettels(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    app = mcp.streamable_http_app()
+    app = mcp.sse_app()
     uvicorn.run(app, host="0.0.0.0", port=port)
